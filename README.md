@@ -115,21 +115,58 @@ DATABASE_URL=mysql+pymysql://user:password@host:3306/contract_rag?charset=utf8mb
 ```text
 contract-rag-agent/
 ├── backend/
-│   ├── agent/              # 合同审查 Agent 流程
-│   ├── db/                 # 数据库连接与 ORM 模型
-│   ├── routers/            # FastAPI 路由
-│   ├── security/           # 登录鉴权与 token
-│   └── services/           # 文档解析、切分、检索、向量库、模型调用
+│   ├── main.py                         # FastAPI 应用入口，注册路由和初始化数据库
+│   ├── config.py                       # 环境变量、模型、数据库、上传目录等配置
+│   ├── schemas.py                      # Pydantic 请求和响应模型
+│   ├── agent/
+│   │   ├── contract_agent.py           # 合同审查 Agent 主流程，支持普通问答和流式问答
+│   │   └── tools.py                    # Agent 工具封装，串联检索和风险分析
+│   ├── db/
+│   │   ├── models.py                   # 用户、合同文件、聊天会话、聊天消息 ORM 模型
+│   │   └── session.py                  # SQLAlchemy 数据库连接和 Session 管理
+│   ├── routers/
+│   │   ├── auth_router.py              # 注册、登录接口
+│   │   ├── chat_router.py              # 问答、流式问答、会话历史、历史删除接口
+│   │   ├── contract_router.py          # 合同上传、合同列表、合同删除接口
+│   │   └── health_router.py            # 服务健康检查接口
+│   ├── security/
+│   │   ├── dependencies.py             # 当前登录用户解析和接口鉴权依赖
+│   │   ├── password.py                 # 密码哈希与校验
+│   │   └── token.py                    # access token 生成与解析
+│   └── services/
+│       ├── auth_service.py             # 用户注册、登录业务逻辑
+│       ├── upload_service.py           # 上传文件保存、文件名处理、大小统计
+│       ├── document_loader.py          # PDF、DOCX、PPTX、TXT、MD 文档解析
+│       ├── contract_splitter.py        # 合同条款规则切分、长文本 chunk 切分
+│       ├── embedding_service.py        # 调用 Qwen / DashScope embedding 接口生成向量
+│       ├── vector_store.py             # ChromaDB 写入、检索、删除和相似度分数计算
+│       ├── retriever_service.py        # 面向问答流程的合同片段检索封装
+│       ├── risk_analyzer.py            # 构造审查 prompt，生成风险分析回答
+│       ├── qwen_client.py              # Qwen 聊天模型同步/流式调用封装
+│       ├── memory_service.py           # 聊天会话、消息、引用来源的保存和读取
+│       └── contract_service.py         # 合同上传后的解析、切分、入库和删除编排
 ├── frontend/
-│   ├── src/                # Vue 页面与接口调用
+│   ├── src/
+│   │   ├── App.vue                    # 主页面，包含登录、合同栏、聊天区、引用展示
+│   │   ├── main.js                    # Vue 应用入口
+│   │   ├── styles.css                 # 页面布局、聊天气泡、侧边栏和响应式样式
+│   │   └── api/
+│   │       └── client.js              # 前端 API 封装，含登录、上传、流式问答、删除操作
+│   ├── index.html
 │   ├── package.json
+│   ├── package-lock.json
 │   └── vite.config.js
-├── data/                   # 本地运行数据，上传 GitHub 时忽略
-├── logs/                   # 本地日志，上传 GitHub 时忽略
-├── .env.example            # 环境变量模板
-├── requirements.txt        # 后端依赖
-├── run_backend.ps1
-└── run_frontend.ps1
+├── data/
+│   ├── app.db                         # 本地 SQLite 数据库，GitHub 上传时忽略
+│   ├── uploads/                       # 用户上传合同文件，GitHub 上传时忽略
+│   └── vector_db/                     # ChromaDB 向量库，GitHub 上传时忽略
+├── logs/                              # 本地运行日志，GitHub 上传时忽略
+├── test_files/                        # 本地测试文件，GitHub 上传时忽略
+├── .env.example                       # 环境变量模板，只保留占位符
+├── .gitignore                         # Git 忽略规则
+├── requirements.txt                   # 后端依赖
+├── run_backend.ps1                    # Windows 后端启动脚本
+└── run_frontend.ps1                   # Windows 前端启动脚本
 ```
 
 ## GitHub 注意事项
