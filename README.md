@@ -192,14 +192,7 @@ contract-rag-agent/
 │   ├── package.json
 │   ├── package-lock.json
 │   └── vite.config.js
-├── data/
-│   ├── app.db                         # 本地 SQLite 数据库，GitHub 上传时忽略
-│   ├── uploads/                       # 用户上传合同文件，GitHub 上传时忽略
-│   └── vector_db/                     # ChromaDB 向量库，GitHub 上传时忽略
-├── logs/                              # 本地运行日志，GitHub 上传时忽略
-├── test_files/                        # 本地测试文件，GitHub 上传时忽略
-├── .env.example                       # 环境变量模板，只保留占位符
-├── .gitignore                         # Git 忽略规则
+├── .env.example                       # 环境变量模板
 ├── requirements.txt                   # 后端依赖
 ├── run_backend.ps1                    # Windows 后端启动脚本
 └── run_frontend.ps1                   # Windows 前端启动脚本
