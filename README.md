@@ -7,6 +7,7 @@
 - [项目简介](#项目简介)
 - [核心特性](#核心特性)
 - [技术栈](#技术栈)
+- [下载后如何使用](#下载后如何使用)
 - [快速开始](#快速开始)
 - [配置说明](#配置说明)
 - [核心流程](#核心流程)
@@ -40,12 +41,53 @@
 | 大模型服务 | Qwen / DashScope compatible-mode API |
 | 数据存储 | SQLite 默认，可切换 MySQL |
 
+## 下载后如何使用
+
+其他用户可以下载或 clone 本仓库，在本地配置自己的环境和 API Key 后运行 Contract Agent。
+
+基本步骤如下：
+
+```text
+1. 下载或 clone 项目代码
+2. 安装 Python 和 Node.js 环境
+3. 复制 .env.example 为 .env
+4. 在 .env 中填写自己的 Qwen / DashScope API Key
+5. 安装后端依赖并启动 FastAPI 服务
+6. 安装前端依赖并启动 Vue 页面
+7. 在页面中注册 / 登录账号
+8. 上传合同文件
+9. 对合同内容提问，系统会进行检索、引用和风险分析
+```
+
+模型调用、embedding 生成和流式回答都会使用运行者自己配置的 API Key。只要不使用仓库作者的 `.env` 或 API Key，就不会消耗仓库作者的模型额度。
+
 ## 快速开始
+
+### 获取代码
+
+```powershell
+git clone https://github.com/LiuBai200/Contract_Agent.git
+cd Contract_Agent
+```
+
+如果直接下载 ZIP，解压后进入项目根目录即可。
+
+### 创建环境变量
+
+```powershell
+Copy-Item .env.example .env
+```
+
+然后打开 `.env`，填写自己的 API Key：
+
+```text
+DASHSCOPE_API_KEY=your-api-key
+SECRET_KEY=replace-with-a-random-string
+```
 
 ### 后端启动
 
 ```powershell
-cd contract-rag-agent
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
@@ -61,7 +103,6 @@ http://127.0.0.1:8001/docs
 ### 前端启动
 
 ```powershell
-cd contract-rag-agent
 .\run_frontend.ps1
 ```
 
