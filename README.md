@@ -12,13 +12,12 @@
 - [配置说明](#配置说明)
 - [核心流程](#核心流程)
 - [项目结构](#项目结构)
-- [GitHub 注意事项](#github-注意事项)
 
 ## 项目简介
 
 本项目面向合同审查场景，使用 RAG 技术将用户上传的合同文件解析、切分并写入向量数据库。用户提问时，系统会在当前用户可访问的合同片段中检索相关条款，并结合大模型生成带引用依据的风险分析结果。
 
-系统支持用户登录、合同文件管理、流式问答、会话历史和多用户数据隔离，适合作为合同审查、企业知识库问答或 RAG Agent 项目的学习与展示案例。
+系统支持用户登录、合同文件管理、流式问答、会话历史和多用户数据隔离，可用于合同审查、企业知识库问答等场景。
 
 ## 核心特性
 
@@ -58,8 +57,6 @@
 8. 上传合同文件
 9. 对合同内容提问，系统会进行检索、引用和风险分析
 ```
-
-模型调用、embedding 生成和流式回答都会使用运行者自己配置的 API Key。只要不使用仓库作者的 `.env` 或 API Key，就不会消耗仓库作者的模型额度。
 
 ## 快速开始
 
@@ -120,8 +117,6 @@ http://127.0.0.1:5173
 DASHSCOPE_API_KEY=your-api-key
 SECRET_KEY=replace-with-a-random-string
 ```
-
-本仓库只提供代码，不提供可公开调用的模型额度。运行者需要配置自己的 API Key，模型调用产生的费用由该 API Key 所属账号承担。请不要将 `.env` 提交到 GitHub。
 
 本地默认使用 SQLite：
 
@@ -209,28 +204,3 @@ contract-rag-agent/
 ├── run_backend.ps1                    # Windows 后端启动脚本
 └── run_frontend.ps1                   # Windows 前端启动脚本
 ```
-
-## GitHub 注意事项
-
-以下内容不应提交到 GitHub：
-
-- `.env`
-- `.venv/`
-- `data/`
-- `logs/`
-- `test_files/`
-- `frontend/node_modules/`
-- `frontend/dist/`
-- `__pycache__/`
-- `*.pyc`
-- `*.db`
-- `*.sqlite`
-- `*.sqlite3`
-
-上传前建议执行：
-
-```powershell
-git status --short
-```
-
-确认只提交源码、配置模板和项目文档。
