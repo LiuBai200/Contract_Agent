@@ -19,11 +19,13 @@ import {
   deleteSession,
   getContracts,
   getCurrentUser,
+  getReviewSettings,
   getSessionMessages,
   getSessions,
   getToken,
   login,
   register,
+  saveReviewSettings,
   setToken,
   uploadContract,
 } from "./api/client";
@@ -41,6 +43,8 @@ const messages = ref([]);
 const citations = ref([]);
 const question = ref("");
 const topK = ref(5);
+const reviewRules = ref("");
+const reviewRulesSaving = ref(false);
 const file = ref(null);
 const uploadResult = ref(null);
 const busy = ref(false);
@@ -121,8 +125,13 @@ async function loadContracts() {
   }
 }
 
+async function loadReviewSettings() {
+  const settings = await getReviewSettings();
+  reviewRules.value = settings.review_rules || "";
+}
+
 async function refreshData() {
-  await Promise.all([loadSessions(), loadContracts()]);
+  await Promise.all([loadSessions(), loadContracts(), loadReviewSettings()]);
 }
 
 async function selectSession(session) {
@@ -192,6 +201,21 @@ async function submitUpload() {
   }
 }
 
+async function submitReviewRules() {
+  error.value = "";
+  notice.value = "";
+  reviewRulesSaving.value = true;
+  try {
+    const response = await saveReviewSettings(reviewRules.value);
+    reviewRules.value = response.review_rules || "";
+    notice.value = "审查规则已保存";
+  } catch (err) {
+    error.value = err.message;
+  } finally {
+    reviewRulesSaving.value = false;
+  }
+}
+
 async function submitQuestion() {
   const text = question.value.trim();
   if (!text) {
@@ -232,7 +256,7 @@ async function submitQuestion() {
   };
 
   try {
-    await askContractStream(text, activeSessionId.value, topK.value, activeContractId.value, (event) => {
+    await askContractStream(text, activeSessionId.value, topK.value, activeContractId.value, reviewRules.value, (event) => {
       if (event.type === "session") {
         activeSessionId.value = event.session_id || activeSessionId.value;
       } else if (event.type === "thinking") {
@@ -268,6 +292,7 @@ function logout() {
   activeContractId.value = null;
   messages.value = [];
   citations.value = [];
+  reviewRules.value = "";
   activeSessionId.value = null;
 }
 
@@ -438,6 +463,23 @@ function syncCitationsFromMessages() {
         </section>
 
         <aside class="side-panel">
+          <section class="panel-block review-rules">
+            <h3>自定义审查规则</h3>
+            <textarea
+              v-model="reviewRules"
+              placeholder="例如：站在乙方视角审查；不接受无限责任；付款周期超过 30 天需提示高风险；甲方单方解除权需要增加通知期。"
+              rows="6"
+            ></textarea>
+            <button
+              class="primary-button full"
+              type="button"
+              :disabled="reviewRulesSaving"
+              @click="submitReviewRules"
+            >
+              保存审查规则
+            </button>
+          </section>
+
           <section class="panel-block">
             <h3>合同文件</h3>
             <label class="file-picker">

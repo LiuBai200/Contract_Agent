@@ -16,6 +16,7 @@ class User(Base):
 
     contracts: Mapped[list["ContractFile"]] = relationship(back_populates="user")
     sessions: Mapped[list["ChatSession"]] = relationship(back_populates="user")
+    review_settings: Mapped["ReviewSettings | None"] = relationship(back_populates="user", uselist=False)
 
 
 class ContractFile(Base):
@@ -59,3 +60,14 @@ class ChatMessage(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     session: Mapped[ChatSession] = relationship(back_populates="messages")
+
+
+class ReviewSettings(Base):
+    __tablename__ = "review_settings"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), unique=True, index=True, nullable=False)
+    review_rules: Mapped[str] = mapped_column(Text, default="")
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+    user: Mapped[User] = relationship(back_populates="review_settings")

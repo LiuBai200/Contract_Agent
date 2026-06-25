@@ -8,6 +8,7 @@ from backend.db.models import ContractFile, User
 from backend.schemas import ContractDeleteResponse, ContractSummary, UploadResponse
 from backend.services.contract_splitter import chunks_to_preview, split_contract_documents
 from backend.services.document_loader import documents_to_preview, load_file_to_documents
+from backend.services.rag_cache import clear_rag_cache_for_user
 from backend.services.upload_service import save_upload_file
 from backend.services.vector_store import VectorStoreService
 
@@ -37,6 +38,7 @@ async def upload_contract_for_user(file: UploadFile, user: User, db: Session) ->
     contract.chunk_count = len(chunks)
     db.commit()
     db.refresh(contract)
+    await clear_rag_cache_for_user(user.id)
 
     result.contract_id = contract.id
     result.document_count = len(documents)
@@ -95,6 +97,7 @@ async def delete_contract_for_user(
 
     db.delete(contract)
     db.commit()
+    await clear_rag_cache_for_user(user_id)
     return ContractDeleteResponse(
         contract_id=contract_id,
         filename=filename,

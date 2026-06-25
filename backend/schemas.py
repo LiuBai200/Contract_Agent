@@ -34,6 +34,7 @@ class AskRequest(BaseModel):
     session_id: Optional[str] = Field(None, description="Chat session id. Empty means create a new session.")
     contract_id: Optional[int] = Field(None, description="Selected contract id. Empty means search all contracts.")
     top_k: int = Field(5, ge=1, le=10)
+    review_rules: Optional[str] = Field(None, max_length=5000, description="Custom contract review rules.")
 
 
 class Citation(BaseModel):
@@ -109,3 +110,11 @@ class ChatMessagePublic(BaseModel):
     role: str
     content: str
     citations: list[Citation] = Field(default_factory=list)
+
+
+class ReviewSettingsRequest(BaseModel):
+    review_rules: str = Field("", max_length=5000)
+
+
+class ReviewSettingsResponse(BaseModel):
+    review_rules: str = ""

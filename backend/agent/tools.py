@@ -9,6 +9,7 @@ async def answer_with_citation(
     history: list[ChatMessage],
     top_k: int = 5,
     contract_id: int | None = None,
+    review_rules: str | None = None,
 ) -> tuple[str, list[dict]]:
     hits = await search_contract_clause(
         question,
@@ -16,5 +17,5 @@ async def answer_with_citation(
         top_k=top_k,
         contract_id=contract_id,
     )
-    answer = await analyze_contract_risk(question, hits, history)
+    answer = await analyze_contract_risk(question, hits, history, review_rules=review_rules)
     return answer, hits

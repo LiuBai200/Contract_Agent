@@ -13,3 +13,4 @@ numpy==1.26.4
 onnxruntime==1.18.1
 posthog<4.0.0
 chromadb==0.5.23
+redis>=5.0.0

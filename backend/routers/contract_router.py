@@ -1,11 +1,13 @@
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from sqlalchemy.orm import Session
 
+from backend.config import settings
 from backend.db.models import User
 from backend.db.session import get_db
 from backend.schemas import ContractDeleteResponse, ContractSummary, UploadResponse
 from backend.security.dependencies import get_current_user
 from backend.services.contract_service import delete_contract_for_user, list_contracts_for_user, upload_contract_for_user
+from backend.services.rate_limiter import rate_limit
 
 
 router = APIRouter(tags=["contracts"])
@@ -16,6 +18,13 @@ router = APIRouter(tags=["contracts"])
 async def upload_contract(
     file: UploadFile = File(...),
     current_user: User = Depends(get_current_user),
+    _: None = Depends(
+        rate_limit(
+            "upload",
+            limit=settings.upload_rate_limit,
+            window_seconds=settings.upload_rate_limit_window_seconds,
+        )
+    ),
     db: Session = Depends(get_db),
 ):
     try:

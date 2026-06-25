@@ -91,7 +91,20 @@ export function deleteContract(contractId) {
   });
 }
 
-export function askContract(question, sessionId, topK = 5, contractId = null) {
+export function getReviewSettings() {
+  return request("/review-settings");
+}
+
+export function saveReviewSettings(reviewRules) {
+  return request("/review-settings", {
+    method: "PUT",
+    body: JSON.stringify({
+      review_rules: reviewRules || "",
+    }),
+  });
+}
+
+export function askContract(question, sessionId, topK = 5, contractId = null, reviewRules = "") {
   return request("/ask", {
     method: "POST",
     body: JSON.stringify({
@@ -99,11 +112,12 @@ export function askContract(question, sessionId, topK = 5, contractId = null) {
       session_id: sessionId || null,
       contract_id: contractId || null,
       top_k: topK,
+      review_rules: reviewRules || "",
     }),
   });
 }
 
-export async function askContractStream(question, sessionId, topK = 5, contractId = null, onEvent) {
+export async function askContractStream(question, sessionId, topK = 5, contractId = null, reviewRules = "", onEvent) {
   const headers = new Headers();
   const token = getToken();
 
@@ -120,6 +134,7 @@ export async function askContractStream(question, sessionId, topK = 5, contractI
       session_id: sessionId || null,
       contract_id: contractId || null,
       top_k: topK,
+      review_rules: reviewRules || "",
     }),
   });
 

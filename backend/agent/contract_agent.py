@@ -6,12 +6,14 @@ from backend.db.models import User
 from backend.schemas import AskRequest, AskResponse, Citation
 from backend.services.memory_service import add_message, get_or_create_session, get_recent_messages
 from backend.services.retriever_service import search_contract_clause
+from backend.services.review_settings_service import get_review_settings
 from backend.services.risk_analyzer import analyze_contract_risk_stream
 
 
 async def run_contract_agent(request: AskRequest, user: User, db: Session) -> AskResponse:
     session = get_or_create_session(request.session_id, user, db, title=request.question[:40])
     history = get_recent_messages(session.id, user.id, db)
+    review_rules = _resolve_review_rules(request.review_rules, user.id, db)
     add_message(session.id, user.id, "user", request.question, db)
 
     answer, hits = await answer_with_citation(
@@ -20,6 +22,7 @@ async def run_contract_agent(request: AskRequest, user: User, db: Session) -> As
         history=history,
         top_k=request.top_k,
         contract_id=request.contract_id,
+        review_rules=review_rules,
     )
     citations = [_hit_to_citation(hit) for hit in hits]
     add_message(session.id, user.id, "assistant", answer, db, citations=citations)
@@ -30,10 +33,11 @@ async def run_contract_agent(request: AskRequest, user: User, db: Session) -> As
         citations=citations,
     )
 
-
+#项目里流式问答的主流程函数
 async def stream_contract_agent(request: AskRequest, user: User, db: Session):
     session = get_or_create_session(request.session_id, user, db, title=request.question[:40])
     history = get_recent_messages(session.id, user.id, db)
+    review_rules = _resolve_review_rules(request.review_rules, user.id, db)
     add_message(session.id, user.id, "user", request.question, db)
 
     yield {
@@ -60,7 +64,7 @@ async def stream_contract_agent(request: AskRequest, user: User, db: Session):
         yield {"type": "thinking", "content": "没有找到可引用条款，正在生成提示信息。"}
 
     answer_parts: list[str] = []
-    async for chunk in analyze_contract_risk_stream(request.question, hits, history):
+    async for chunk in analyze_contract_risk_stream(request.question, hits, history, review_rules=review_rules):
         answer_parts.append(chunk)
         yield {"type": "answer_delta", "content": chunk}
 
@@ -103,3 +107,9 @@ def _citation_to_dict(citation: Citation) -> dict:
     if hasattr(citation, "model_dump"):
         return citation.model_dump()
     return citation.dict()
+
+
+def _resolve_review_rules(request_rules: str | None, user_id: int, db: Session) -> str:
+    if request_rules is not None:
+        return request_rules.strip()
+    return get_review_settings(user_id, db).review_rules

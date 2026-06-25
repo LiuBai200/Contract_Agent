@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from backend.db.session import init_db
 from backend.routers import auth_router, chat_router, contract_router, health_router
+from backend.services.rate_limiter import close_rate_limiter
 
 
 app = FastAPI(
@@ -23,6 +24,11 @@ app.add_middleware(
 @app.on_event("startup")
 async def startup_event():
     init_db()
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    await close_rate_limiter()
 
 
 app.include_router(health_router.router)
